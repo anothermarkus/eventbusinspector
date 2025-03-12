@@ -1,5 +1,4 @@
-// content.js
-function trackEventBuses(eventBuses) {
+function trackEventBusesInPage(eventBuses) {
   eventBuses.forEach(eventBusName => {
     const eventBus = window[eventBusName];
 
