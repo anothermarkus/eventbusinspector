@@ -11,33 +11,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const tabId = tabs[0].id; // Get the ID of the active tab
         console.log("Active tabId:", tabId);
 
-        // Execute the script in the active tab
+        const injectedsrc = chrome.runtime.getURL('injectedScript.js'); // Get the correct URL for injectedScript.js
+        console.log("Injected Src", injectedsrc);
+
+        // Inject an external script into the page by creating a script element with the correct src
         chrome.scripting.executeScript({
           target: { tabId: tabId },
-          func: function () {
-            let eventBuses = [];
-
-            // Look for globalEventBus and other event buses in the page's window
-            if (window.globalEventBus) {
-              eventBuses.push('globalEventBus');
-            }
-
-            // Check all global variables for event buses
-            for (let prop in window) {
-              if (
-                window[prop] &&
-                typeof window[prop] === 'object' &&
-                (window[prop].publishEvent || window[prop].publish || window[prop].subscribeToEvent)
-              ) {
-                eventBuses.push(prop);
-              }
-            }
-
-            console.log("Event buses detected: ", eventBuses);
-
-            // Send back the event buses found to the popup.js
-            chrome.runtime.sendMessage({ action: 'eventBusesFound', eventBuses: eventBuses });
-          }
+          func: function (src) {
+            const script = document.createElement('script');
+            script.src = src; // Set the script source to the chrome-extension URL
+            document.documentElement.appendChild(script); // Append the script to the document
+            script.onload = () => {
+              console.log("Injected script loaded successfully!");
+            };
+            script.onerror = (error) => {
+              console.error("Failed to load injected script:", error);
+            };
+          },
+          args: [injectedsrc] // Pass the chrome-extension URL as an argument to the function
         });
       } else {
         console.error("No active tab found.");
