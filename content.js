@@ -1,3 +1,25 @@
+console.log("content.js has loaded");
+
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log("Content.js: got message",message);
+
+  if (message.action === 'trackEventBuses') {
+    console.log("Content.js: got message to track event busses");
+    const selectedEventBuses = message.eventBuses;
+
+    trackEventBusesInPage(selectedEventBuses);
+  
+  }
+
+  if (message.action === 'stopTrackingEvents') {
+    const { eventBuses } = message;
+    // Start tracking event buses
+    console.log("TODO Tracking event buses:", eventBuses);
+    // Start your event tracking logic here...
+  }
+});
+
 function trackEventBusesInPage(eventBuses) {
   eventBuses.forEach(eventBusName => {
     const eventBus = window[eventBusName];
@@ -43,3 +65,12 @@ function trackEventBusesInPage(eventBuses) {
     }
   });
 }
+
+  
+// Injected Script -> Content.js -> Popup.js -> updateEventBusList()
+window.addEventListener("PassToContent", function(evt) {
+  console.log("content.js: Got PassToContent message",evt);
+  chrome.runtime.sendMessage(evt.detail); // This should pass it to popup.js (or background.js if necessary)
+}, false);
+
+

@@ -2,13 +2,6 @@
 (() => {
     let eventBuses = [];
   
-    // Look for globalEventBus and other event buses in the page's window
-    if (window.globalEventBus) {
-      eventBuses.push('globalEventBus');
-    } else {
-      chrome.runtime.sendMessage({ action: 'NoGlobalEventBus', bus: window.globalEventBus });
-    }
-  
     // Check all global variables for event buses
     for (let prop in window) {
       if (
@@ -23,6 +16,25 @@
     console.log("Event buses detected: ", eventBuses);
   
     // Send back the event buses found to the popup.js
-    chrome.runtime.sendMessage({ action: 'eventBusesFound', eventBuses: eventBuses });
+ 
+    // we are not within the context of chrome extension, we need to communicate
+    // in this indirect way
+    // 
+    //  injectedScript.js  
+    //  |
+    //  | window.postMessage();  // or window.dispatch()   <-- WE ARE HERE
+    //  |
+    //  V
+    // content.js //window.addEventListener("message", callback, false);
+    //  |
+    //  | chrome.runtime.sendMessage();
+    //  |
+    //  V
+    // background.js // chrome.runtime.onMessage.addListener((message, sender, sendResponse)
+ 
+    var event = new CustomEvent("PassToContent", {detail: { action: 'eventBusesFound', eventBuses: eventBuses }});
+
+    window.dispatchEvent(event);
+
   })();
   
