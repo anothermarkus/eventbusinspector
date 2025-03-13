@@ -5,66 +5,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log("Content.js: got message",message);
 
   if (message.action === 'trackEventBuses') {
-    console.log("Content.js: got message to track event busses");
+    console.log("Content.js: got message to track event busses forwarding to injectedScript.js");
     const selectedEventBuses = message.eventBuses;
 
-    trackEventBusesInPage(selectedEventBuses);
+    var event = new CustomEvent("FromContentScript", {detail: { action: 'trackEventBuses', eventBuses: selectedEventBuses }});
+    window.dispatchEvent(event);
+
+    //trackEventBusesInPage(selectedEventBuses);
   
   }
 
   if (message.action === 'stopTrackingEvents') {
+    console.log("Content.js: got message to stop tracking event busses forwarding to injectedScript.js");
     const { eventBuses } = message;
     // Start tracking event buses
-    console.log("TODO Tracking event buses:", eventBuses);
-    // Start your event tracking logic here...
+    
+    var event = new CustomEvent("FromContentScript", {detail: { action: 'stopTrackingEvents' }});
+    window.dispatchEvent(event);
+  
   }
+
 });
 
-function trackEventBusesInPage(eventBuses) {
-  eventBuses.forEach(eventBusName => {
-    const eventBus = window[eventBusName];
-
-    if (eventBus && (typeof eventBus.publishEvent === 'function' || typeof eventBus.publish === 'function') && typeof eventBus.subscribeToEvent === 'function') {
-      console.log(`Tracking event bus: ${eventBusName}`);
-      
-      // Capture and log the publishEvent method
-      if (eventBus.publishEvent) {
-        const originalPublishEvent = eventBus.publishEvent;
-        eventBus.publishEvent = function(eventKey, data) {
-          console.log(`Event Published on ${eventBusName}: ${eventKey}`, data);
-          chrome.runtime.sendMessage({
-            action: 'logEvent',
-            data: { type: 'publish', eventBusName, eventKey, data }
-          });
-          return originalPublishEvent.apply(eventBus, arguments);
-        };
-      } else if (eventBus.publish) {
-        const originalPublish = eventBus.publish;
-        eventBus.publish = function(eventKey, data) {
-          console.log(`Event Published on ${eventBusName}: ${eventKey}`, data);
-          chrome.runtime.sendMessage({
-            action: 'logEvent',
-            data: { type: 'publish', eventBusName, eventKey, data }
-          });
-          return originalPublish.apply(eventBus, arguments);
-        };
-      }
-
-      // Capture and log the subscribeToEvent method
-      const originalSubscribe = eventBus.subscribeToEvent;
-      eventBus.subscribeToEvent = function(eventKey) {
-        console.log(`Event Subscribed on ${eventBusName}: ${eventKey}`);
-        chrome.runtime.sendMessage({
-          action: 'logEvent',
-          data: { type: 'subscribe', eventBusName, eventKey }
-        });
-        return originalSubscribe.apply(eventBus, arguments);
-      };
-    } else {
-      console.log(`Event bus ${eventBusName} not found or invalid.`);
-    }
-  });
-}
 
   
 // Injected Script -> Content.js -> Popup.js -> updateEventBusList()
