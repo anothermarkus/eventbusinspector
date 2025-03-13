@@ -8,8 +8,9 @@ injectedScript.js that sits in the DOM of the target site communicates via windo
 
 Last step to get communication flowing is to finally see the console logs when event is published or subscribed!
 
-Looks like the logic that finds the event bus from the window needs to be moved from content.js to injectedScript.js
+Logic that finds the event bus from the window needs to be moved to injectedScript.js
 
-![image](https://github.com/user-attachments/assets/fb9bb377-3c15-41de-8556-9b4e5e2fd7a9)
+![image](https://github.com/user-attachments/assets/7605942b-03d6-4b01-8266-ac128278cdbc)
+
 
 
