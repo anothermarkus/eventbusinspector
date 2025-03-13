@@ -36,23 +36,93 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
   }
 
-  if (message.action === 'trackEventBuses') {
-    const selectedEventBuses = message.eventBuses;
+  // if (message.action === 'trackEventBuses') {
+  //   const selectedEventBuses = message.eventBuses;
 
-    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-      if (tabs.length > 0) {
-        const tabId = tabs[0].id;
+  //   chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+  //     if (tabs.length > 0) {
+  //       const tabId = tabs[0].id;
 
-        chrome.scripting.executeScript({
-          target: { tabId: tabId },
-          func: trackEventBusesInPage,
-          args: [selectedEventBuses]
-        });
-      } else {
-        console.error("No active tab found.");
-      }
-    });
-  }
+  //       chrome.scripting.executeScript({
+  //         target: { tabId: tabId },
+  //         func: trackEventBusesInPage,
+  //         args: [selectedEventBuses]
+  //       });
+  //     } else {
+  //       console.error("No active tab found.");
+  //     }
+  //   });
+  // }
 
   return true;
 });
+
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log("background.js: Got a message", message);
+  
+  if (message.action === 'trackEventBuses') {
+    console.log("background.js forwarding start message to content.js");
+  
+    // Find the active tab where content.js is running
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs[0]){ console.log("Active tab not found cannot forward from background.js");  return; }
+      const tabId = tabs[0].id; // Get the active tab's ID
+
+      // Send the message to the content script in that tab
+      chrome.tabs.sendMessage(tabId, {
+        action: 'trackEventBuses',
+        eventBuses: message.eventBuses
+      });
+    });
+  }
+
+  if (message.action === 'stopTrackingEvents') {
+    console.log("background.js forwarding stop message to content.js");
+  
+    // Find the active tab where content.js is running
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs[0]){ console.log("Active tab not found cannot forward from background.js");  return; }
+      const tabId = tabs[0].id; // Get the active tab's ID
+
+      // Send the message to the content script in that tab
+      chrome.tabs.sendMessage(tabId, {
+        action: 'stopTrackingEvents',
+        eventBuses: message.eventBuses
+      });
+    });
+  }
+
+});
+
+
+// background.js
+
+// Listen for messages from content scripts
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'logEvent') {
+    const { type, eventBusName, eventKey, data } = message.data;
+    
+    // Handle event logging or processing here
+    console.log(`Received event:`, { type, eventBusName, eventKey, data });
+
+    // Example: You can save events in local storage or sync them to a server
+    // If you're saving to storage:
+    chrome.storage.local.get({ events: [] }, (result) => {
+      const events = result.events;
+      events.push({ type, eventBusName, eventKey, data, timestamp: new Date().toISOString() });
+
+      // Save the events back to local storage
+      chrome.storage.local.set({ events }, () => {
+        console.log('Event logged successfully!');
+      });
+    });
+
+    // Optionally, send a response back if needed
+    sendResponse({ success: true });
+  }
+
+  // Return true if you want to send an asynchronous response
+  return true;
+});
+
