@@ -1,4 +1,4 @@
-# eventbusinspector
+# Event Bus Inspector
 Basic Chome Extension to debug events being published and subscribed to event bus
 
 background.js is the middleman between popup.js and content.js
