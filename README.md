@@ -1,10 +1,13 @@
 # eventbusinspector
 Basic Chome Extension to debug events being published and subscribed to event bus
 
+background.js is the middleman between popup.js and content.js
+injectedScript.js that sits in the DOM of the target site communicates via window.dispatchEvent(event); which content.js picks up
+
+![image](https://github.com/user-attachments/assets/d46ab952-5745-47bb-bac3-854ff1a0d36d)
+
+Last step to get communication flowing is to finally see the console logs when event is published or subscribed!
 
 
-![image](https://github.com/user-attachments/assets/8de932a7-3417-459b-9a4a-606a6c9efc0e)
 
-Still a work in progress, but I'm finally able to get a handle on the global window!
 
-![image](https://github.com/user-attachments/assets/3c6159e9-980b-4393-913d-302253a4a30d)
