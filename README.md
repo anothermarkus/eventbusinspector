@@ -61,6 +61,7 @@ TODO
 - Add unit tests
 - Add test framework
 - Convert project to Angular ?
+- Organize folders, extract inline styles to external css
 
 
 
