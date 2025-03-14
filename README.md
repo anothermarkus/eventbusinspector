@@ -10,47 +10,49 @@ injectedScript.js that sits in the DOM of the target site communicates via windo
 Events are sent to this helper page. 
 ![image](https://github.com/user-attachments/assets/b971adf9-be53-4991-97cb-d751baad96b0)
 
-![image](https://github.com/user-attachments/assets/dd5402ae-5dbc-421e-b601-1391a36b3f9d)
+![image](https://github.com/user-attachments/assets/4ccb0266-5f7e-410b-8c2c-5e6a61fb82b2)
+
 
 
 https://www.planttext.com/
 
 @startuml
+actor User
 
-    participant injectedScript.js
-    participant content.js
-    participant popup.js
-    participant eventDisplay.js
-    participant background.js
+entity "popup.js" as popup
+entity "background.js" as background
+entity "content.js" as content
+entity "injectedScript.js" as injected
+entity "eventDisplay.js" as eventDisplay
 
-    note right of injectedScript.js: Detect Event Buses
-    injectedScript.js->>injectedScript.js: Detect Event Buses in the page
-    injectedScript.js->>content.js: Send EventBuses data via postMessage
-    content.js->>popup.js: Forward event to popup.js
+== Scenario 1: Extension Automatically Injects Script ==
+User -> popup : Extension loads
+popup -> background
+background -> injected : Injects injectedScript.js into active tab
 
-    note right of injectedScript.js: Track Event Buses Activities
-     content.js->>injectedScript.js: Send trackEventBuses to injectedScript.js
-    injectedScript.js->>injectedScript.js: Track event buses (publish/subscribe)
-    popup.js->>popup.js: Update UI with Event List
-    popup.js->>background.js: Forward event to background.js for logging
-    background.js->>background.js: Log Event to Local Storage/Sync
+== Scenario 2: Detect Event Buses and Send to Popup ==
+injected -> injected : Detect event buses on the page
+injected -> content : Dispatches event (InjectionEventToContentLayer)
+content -> background : Forwards custom event to background.js (InjectionEventToContentLayer)
+background -> popup : Sends message (eventBusesFound)
 
-    note right of injectedScript.js: Send Open Tab
-    popup.js->>background.js: Send openNewTab message to background.js
-    background.js->>background.js: Open a new tab (eventDisplay.html)
+popup -> popup : Populates event bus list UI
 
-    note right of injectedScript.js: Send Event to Event Display
-    injectedScript.js->>eventDisplay.js: Send Event to eventDisplay.js (publish/subscribe)
-    background.js->>eventDisplay.js: Send updateEventList to eventDisplay.js
-    eventDisplay.js->>eventDisplay.js: Update event table in UI
-  
+== Scenario 3: User Selects Event Buses to Track ==
+User -> popup : Selects event buses (checkboxes)
+popup -> background : Sends message (trackEventBuses, selected event buses)
+background -> injected : Updates tracked event buses in injected script
 
-    note right of injectedScript.js: injectedScript.js detects event buses and tracks events on the page
-    note right of content.js: content.js listens for messages, sends events to popup.js
-    note right of eventDisplay.js: eventDisplay.js shows event data in the event table
-    note right of popup.js: popup.js collects event bus info and displays it in the popup interface
-    note right of background.js: background.js facilitates communication between content.js, popup.js, and eventDisplay.js
+== Scenario 4: Publish/Subscribe Event Tracking ==
+injected -> injected : Wraps event bus methods for tracking
+injected -> content : Dispatches event (publish or subscribe event detected)
+content -> background : Forwards event to background.js
+background -> eventDisplay : Sends event data (updateEventList)
+
+eventDisplay -> eventDisplay : Captures and displays event in table
+
 @enduml
+
 
 
 
