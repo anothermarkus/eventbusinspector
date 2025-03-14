@@ -54,4 +54,14 @@ https://www.planttext.com/
 
 
 
+TODO
+- Instructional video
+- Persist selections, and refresh list rather than abandoning the state each time the button is clicked
+- Clean up reundancy in the code
+- Add unit tests
+- Add test framework
+- Convert project to Angular ?
+
+
+
 
