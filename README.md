@@ -16,6 +16,7 @@ Events are sent to this helper page.
 
 https://www.planttext.com/
 
+```
 @startuml
 actor User
 
@@ -52,7 +53,7 @@ background -> eventDisplay : Sends event data (updateEventList)
 eventDisplay -> eventDisplay : Captures and displays event in table
 
 @enduml
-
+```
 
 
 
