@@ -1,3 +1,4 @@
+//content.js
 class ContentScriptHandler {
   constructor() {
     this.initialize();

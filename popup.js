@@ -1,3 +1,4 @@
+// popup.js
 class PopupEventTracker {
   constructor() {
     this.tracking = false; // To track whether events are being tracked

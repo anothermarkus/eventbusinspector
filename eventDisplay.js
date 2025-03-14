@@ -1,3 +1,5 @@
+
+// eventDisplay.js
 class EventDisplay {
     constructor() {
         this.eventList = document.getElementById('eventList');

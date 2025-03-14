@@ -1,3 +1,4 @@
+//background.js
 class BackgroundHandler {
   constructor() {
     this.eventDisplayTabId = null;  // To track the event display tab
