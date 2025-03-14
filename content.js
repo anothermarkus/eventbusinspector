@@ -1,62 +1,65 @@
-console.log("content.js has loaded");
+class ContentScriptHandler {
+  constructor() {
+    this.initialize();
+  }
 
+  // Method to initialize the content script and set up listeners
+  initialize() {
+    console.log("content.js has loaded");
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("Content.js: got message",message);
+    // Listen for messages from background or popup
+    this.setupMessageListener();
 
-  if (message.action === 'trackEventBuses') {
-    console.log("Content.js: got message to track event busses forwarding to injectedScript.js");
-    const selectedEventBuses = message.eventBuses;
+    // Listen for custom events from the injected script
+    this.setupCustomEventListener();
+  }
 
-    var event = new CustomEvent("FromContentScript", {detail: { action: 'trackEventBuses', eventBuses: selectedEventBuses }});
+  // Set up the message listener to handle communication from background or popup
+  setupMessageListener() {
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      console.log("Content.js: got message", message);
+      this.handleAction(message.action, message.eventBuses);
+    });
+  }
+
+  // Handle the action types by dispatching corresponding events
+  handleAction(action, eventBuses) {
+    switch (action) {
+      case 'trackEventBuses':
+        this.dispatchCustomEvent('trackEventBuses', eventBuses);
+        break;
+      case 'stopTrackingEvents':
+        this.dispatchCustomEvent('stopTrackingEvents');
+        break;
+      default:
+        console.warn(`Unknown action received: ${action}`);
+    }
+  }
+
+  // Dispatch a custom event to the injected script
+  // 
+  // content.js -> injectedScript.js
+  dispatchCustomEvent(action, eventBuses = []) {
+    console.log(`Content.js: forwarding ${action} to injectedScript.js`);
+
+    const event = new CustomEvent("FromContentScript", {
+      detail: { action, eventBuses }
+    });
+
     window.dispatchEvent(event);
-
-    //trackEventBusesInPage(selectedEventBuses);
-  
   }
 
-  if (message.action === 'stopTrackingEvents') {
-    console.log("Content.js: got message to stop tracking event busses forwarding to injectedScript.js");
-    const { eventBuses } = message;
-    // Start tracking event buses
-    
-    var event = new CustomEvent("FromContentScript", {detail: { action: 'stopTrackingEvents' }});
-    window.dispatchEvent(event);
-  
+  // Set up the custom event listener to handle events from the injected script
+  setupCustomEventListener() {
+    window.addEventListener("InjectionEventToContentLayer", (evt) => this.handleInjectionEventToContentLayer(evt), false);
   }
 
-});
-
-window.addEventListener("BusEventPassToContent", function(evt) {
-
-
-
-  if (!evt || !evt.detail){
-    console.log("empty event discarding");
-    return;
+  // Handle the InjectionEventToContentLayer and forward to popup.js
+  handleInjectionEventToContentLayer(evt) {
+    console.log("content.js: Got InjectionEventToContentLayer message", evt);
+    chrome.runtime.sendMessage(evt.detail); // Forward to popup.js
   }
+}
 
-  console.log(`Captured event: ${evt.detail.eventBusName} - ${evt.detail.eventKey}`, evt.detail.data);
-
-  chrome.runtime.sendMessage(evt.detail); // This should pass it to popup.js (or background.js if necessary)
-
-  // struture of event
-  // chrome.runtime.sendMessage({
-  //   action: 'updateEventList',
-  //   event: {
-  //     type: evt.detail 'publish',
-  //     eventBusName: eventBusName,
-  //     eventKey: eventKey,
-  //     data: data
-  //   }
-  // });
-
-}, false);
-
-  
-// Injected Script -> Content.js -> Popup.js -> updateEventBusList()
-window.addEventListener("PassToContent", function(evt) {
-  console.log("content.js: Got PassToContent message",evt);
-  chrome.runtime.sendMessage(evt.detail); // This is passed to popup.js 
-}, false);
-
+// Instantiate and initialize the ContentScriptHandler class
+new ContentScriptHandler();
