@@ -59,6 +59,7 @@ TODO
 - Convert project to Angular ?
 - Organize folders, extract inline styles to external css
 - Implement Stop tracking events
+- Put TODO list into Issues section in GitHub
 
 
 
