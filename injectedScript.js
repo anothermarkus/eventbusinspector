@@ -65,20 +65,39 @@
               const originalPublishEvent = eventBus.publishEvent;
               eventBus.publishEvent = function(eventKey, data) {
                 console.log(`Event Published on ${eventBusName}: ${eventKey}`, data);
-                // chrome.runtime.sendMessage({
-                //   action: 'logEvent',
-                //   data: { type: 'publish', eventBusName, eventKey, data }
-                // });
+
+                var event = new CustomEvent("BusEventPassToContent", { detail:
+                    { action: 'updateEventList',
+                      event: {
+                        type: 'publish',
+                             eventBusName: eventBusName,
+                             eventKey: eventKey,
+                             data: data
+                           }
+                    } } );
+
+                window.dispatchEvent(event);
+
+
                 return originalPublishEvent.apply(eventBus, arguments);
               };
             } else if (eventBus.publish) {
               const originalPublish = eventBus.publish;
               eventBus.publish = function(eventKey, data) {
                 console.log(`Event Published on ${eventBusName}: ${eventKey}`, data);
-                // chrome.runtime.sendMessage({
-                //   action: 'logEvent',
-                //   data: { type: 'publish', eventBusName, eventKey, data }
-                // });
+
+                var event = new CustomEvent("BusEventPassToContent", { detail:
+                    {    action: 'updateEventList',
+                         event: {
+                        type: 'publish',
+                             eventBusName: eventBusName,
+                             eventKey: eventKey,
+                             data: data
+                           }
+                    } } );
+
+                    window.dispatchEvent(event);
+
                 return originalPublish.apply(eventBus, arguments);
               };
             }
@@ -86,10 +105,19 @@
                 const originalSubscribe = eventBus.subscribe;
                 eventBus.publish = function(eventKey, data) {
                   console.log(`Event Subscribed on ${eventBusName}: ${eventKey}`, data);
-                  // chrome.runtime.sendMessage({
-                  //   action: 'logEvent',
-                  //   data: { type: 'publish', eventBusName, eventKey, data }
-                  // });
+
+                   var event = new CustomEvent("BusEventPassToContent", { detail:
+                    {   action: 'updateEventList',
+                        event: {
+                        type: 'subscribe',
+                             eventBusName: eventBusName,
+                             eventKey: eventKey,
+                             data: data
+                           }
+                    } } );
+
+                    window.dispatchEvent(event);
+
                   return originalPublish.apply(eventBus, arguments);
                 };
             } 
@@ -98,10 +126,19 @@
                 const originalSubscribe = eventBus.subscribeToEvent;
                 eventBus.subscribeToEvent = function(eventKey) {
                 console.log(`Event Subscribed on ${eventBusName}: ${eventKey}`);
-                //   chrome.runtime.sendMessage({
-                //     action: 'logEvent',
-                //     data: { type: 'subscribe', eventBusName, eventKey }
-                //   });
+               
+                var event = new CustomEvent("BusEventPassToContent", { detail:
+                    {    action: 'updateEventList',
+                         event: {
+                        type: 'subscribe',
+                             eventBusName: eventBusName,
+                             eventKey: eventKey,
+                             data: data
+                           }
+                    } } );
+
+                    window.dispatchEvent(event);
+
                 return originalSubscribe.apply(eventBus, arguments);
                 };
              }

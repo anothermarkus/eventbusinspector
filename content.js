@@ -27,12 +27,36 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 });
 
+window.addEventListener("BusEventPassToContent", function(evt) {
+
+
+
+  if (!evt || !evt.detail){
+    console.log("empty event discarding");
+    return;
+  }
+
+  console.log(`Captured event: ${evt.detail.eventBusName} - ${evt.detail.eventKey}`, evt.detail.data);
+
+  chrome.runtime.sendMessage(evt.detail); // This should pass it to popup.js (or background.js if necessary)
+
+  // struture of event
+  // chrome.runtime.sendMessage({
+  //   action: 'updateEventList',
+  //   event: {
+  //     type: evt.detail 'publish',
+  //     eventBusName: eventBusName,
+  //     eventKey: eventKey,
+  //     data: data
+  //   }
+  // });
+
+}, false);
 
   
 // Injected Script -> Content.js -> Popup.js -> updateEventBusList()
 window.addEventListener("PassToContent", function(evt) {
   console.log("content.js: Got PassToContent message",evt);
-  chrome.runtime.sendMessage(evt.detail); // This should pass it to popup.js (or background.js if necessary)
+  chrome.runtime.sendMessage(evt.detail); // This is passed to popup.js 
 }, false);
-
 

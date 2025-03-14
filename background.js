@@ -1,3 +1,7 @@
+
+
+var eventDisplayTabId;
+
 chrome.runtime.onInstalled.addListener(() => {
   console.log("Event Tracker Extension Installed");
 });
@@ -126,3 +130,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
+// background.js
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'openNewTab') {
+    // Open a new tab and load a simple HTML page
+    chrome.tabs.create({ url: 'eventDisplay.html' }, (newTab) => {
+      eventDisplayTabId = newTab.Id
+      console.log('New tab opened: ', eventDisplayId);
+    });
+  }
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'updateEventList') {
+    console.log("background.js: Received and forwarding updateventlist message to eventdisplay.js")
+    // Forward this event to the newly opened tab (eventDisplay.html)
+    if (eventDisplayTabId !== null) {
+      chrome.tabs.sendMessage(eventDisplayTabId, {
+        action: 'updateEventList',
+        event: message.event
+      });
+    }
+  }
+});
