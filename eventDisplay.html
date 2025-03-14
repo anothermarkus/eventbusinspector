@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+            vertical-align: top;
+            /* Align all columns to the top */
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        /* First and last column should fill remaining width */
+        th:first-child,
+        td:first-child {
+            width: auto;
+        }
+
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 100%;
+            /* Take the remaining space */
+            max-width: 0;
+            word-wrap: break-word;
+            overflow: visible;
+            /* Allow content to overflow naturally */
+            white-space: normal;
+            /* Allow text to wrap to the next line */
+        }
+
+        th:last-child,
+        td:last-child {
+            width: auto;
+        }
+
+        .event-row {
+            display: flex;
+            margin-bottom: 5px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #exportButton {
+            padding: 6px 12px;
+            /* Adds space inside the button */
+            font-size: 14px;
+            /* Sets a readable font size */
+            background-color: #3e65a1;
+            /* Green background */
+            color: white;
+            /* White text color */
+            border: none;
+            /* Removes the default border */
+            border-radius: 5px;
+            /* Rounded corners */
+            cursor: pointer;
+            /* Changes the cursor to a pointer when hovering */
+            transition: background-color 0.3s ease;
+            /* Smooth background color transition */
+            margin: 10px 0;
+            /* Adds space around the button */
+        }
+
+        #exportButton:hover {
+            background-color: #1709db;
+            /* Darker green when hovering */
+        }
+
+        #exportButton:focus {
+            outline: none;
+            /* Removes the outline when the button is focused */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Event Tracker</h1>
+
+    <button id="exportButton">Export to CSV</button>
+
+
+    <!-- Create a table with a header -->
+    <table id="eventTable">
+        <thead>
+            <tr>
+                <th>Event Type</th>
+                <th>Event Details</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody id="eventList">
+            <!-- Event rows will be dynamically added here -->
+        </tbody>
+    </table>
+
+    <script src="eventDisplay.js"></script>
+</body>
+
+</html>

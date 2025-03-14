@@ -2,6 +2,12 @@ document.addEventListener('DOMContentLoaded', function () {
   console.log("Popup DOM is fully loaded");  // Add a log to check if the DOM is loaded
   
   const trackButton = document.getElementById('trackButton');
+  const addTabButton = document.getElementById('openTabEvents');
+
+  addTabButton.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ action: 'openNewTab' });  // sends to background.js
+  });
+
   let tracking = false;  // Boolean to track whether events are being tracked or not
   
   if (!trackButton) {
@@ -59,14 +65,28 @@ document.addEventListener('DOMContentLoaded', function () {
   chrome.runtime.sendMessage({ action: 'injectScript' });
 
 
-  // Forwarded from content.js
+
+
+
+
+  // Forwarded from content.jss
   // Listen for the event buses found
   chrome.runtime.onMessage.addListener((message) => {
     if (message.action === 'eventBusesFound') {
       console.log("popup.js: Event buses found:", message.eventBuses);
       updateEventBusList(message.eventBuses);
     }
+
+    if (message.action === 'updateEventList') {
+      console.log("popup.js: Bus Event Happened!:", message.eventBuses);
+      updateEventList(message);
+    }
+
   });
+
+  function updateEventList(){
+    //TODO Forward this to background.js
+  }
 
   // Update the popup UI with the list of event buses
   function updateEventBusList(eventBuses) {
@@ -95,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
+ 
     // we are not within the context of chrome extension, we need to communicate
     // in this indirect way
     // 
