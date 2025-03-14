@@ -15,12 +15,14 @@ Events are sent to this helper page.
 
 ```mermaid
 sequenceDiagram
-    participant injectedScript.js
-    participant content.js
     participant popup.js
     participant eventDisplay.js
+    participant injectedScript.js
+    participant content.js
     participant background.js
 
+    note left of popup.js: popup.js collects event bus info and displays it in the popup interface
+    note left of eventDisplay.js: eventDisplay.js shows event data in the event table
     note right of injectedScript.js: Detect Event Buses
     injectedScript.js->>injectedScript.js: Detect Event Buses in the page
     injectedScript.js->>content.js: Send EventBuses data via postMessage
@@ -44,8 +46,7 @@ sequenceDiagram
 
     note right of injectedScript.js: injectedScript.js detects event buses and tracks events on the page
     note right of content.js: content.js listens for messages, sends events to popup.js
-    note right of eventDisplay.js: eventDisplay.js shows event data in the event table
-    note right of popup.js: popup.js collects event bus info and displays it in the popup interface
+    note left of eventDisplay.js: eventDisplay.js shows event data in the event table
     note right of background.js: background.js facilitates communication between content.js, popup.js, and eventDisplay.js
 ```
 
