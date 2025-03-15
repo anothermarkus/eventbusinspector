@@ -52,13 +52,21 @@ note right of background.js: background.js facilitates communication between con
 
 
 TODO
+
+Features 
+- Implement Stop tracking events
+- Include function / or stack of what published / subscribed to the eventBus
+- Dynamic periodic re-scan of the event bus
+- Track all events from all busses by default
+
+Bugs
+- No subscription events, they may have happend PRIOR to loading of the page
+
+MISC
 - Instructional video
-- Persist selections, and refresh list rather than abandoning the state each time the button is clicked
 - Add unit tests
 - Add test framework
 - Convert project to Angular ?
-- Organize folders, extract inline styles to external css
-- Implement Stop tracking events
 - Put TODO list into Issues section in GitHub
 
 
