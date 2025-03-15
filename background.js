@@ -45,40 +45,62 @@ class BackgroundHandler {
         break;
 
       default:
-        console.warn("Unknown action:", message.action);
+        console.warn("Unknown action:", JSON.stringify(message));
     }
 
     // Return true for asynchronous response
     return true;
   }
 
-  // Inject the script into the active tab
+  // Inject the script into the active tab (if it hasn't been injected already)
   injectScript() {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs.length > 0) {
-        const tabId = tabs[0].id;
+    // First, check if a tab has already been injected
+    chrome.storage.local.get(['injectedTabId'], (result) => {
+      const injectedTabId = result.injectedTabId;
 
-        const injectedsrc = chrome.runtime.getURL('injected/injectedScript.js');  // Inline this part here
-
-        chrome.scripting.executeScript({
-          target: { tabId },
-          func: function (src) {
-            const script = document.createElement('script');
-            script.src = src;  // Set the script source to the chrome-extension URL
-            document.documentElement.appendChild(script);
-
-            script.onload = () => {
-              console.log("Injected script loaded successfully!");
-            };
-            script.onerror = (error) => {
-              console.error("Failed to load injected script:", error);
-            };
-          },
-          args: [injectedsrc],  // Pass the inline script URL as an argument to the function
+      // If there is already a tab ID stored in the storage, we skip injection if it's the same tab
+      if (injectedTabId) {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs.length > 0 && tabs[0].id === injectedTabId) {
+            console.log("Script already injected in this tab, skipping.");
+            return;
+          }
         });
-      } else {
-        console.error("No active tab found.");
       }
+
+      // Proceed with injecting the script
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs.length > 0) {
+          const tabId = tabs[0].id;
+
+          const injectedsrc = chrome.runtime.getURL('injected/injectedScript.js');
+
+          // Inline injection of the script
+          chrome.scripting.executeScript({
+            target: { tabId },
+            func: function(src) {
+              const script = document.createElement('script');
+              script.src = src;  // Set the script source to the chrome-extension URL
+              document.documentElement.appendChild(script);
+
+              script.onload = () => {
+                console.log("Injected script loaded successfully!");
+              };
+              script.onerror = (error) => {
+                console.error("Failed to load injected script:", error);
+              };
+            },
+            args: [injectedsrc],  // Pass the script URL as an argument
+          });
+
+          // Store the tab ID in storage to avoid re-injection
+          chrome.storage.local.set({ injectedTabId: tabId }, () => {
+            console.log("Script injected and tab marked.");
+          });
+        } else {
+          console.error("No active tab found.");
+        }
+      });
     });
   }
 
@@ -90,11 +112,11 @@ class BackgroundHandler {
         console.error("Active tab not found, cannot forward trackEventBuses.");
         return;
       }
-      const tabId = tabs[0].id;
-      chrome.tabs.sendMessage(tabId, {
-        action: 'trackEventBuses',
-        eventBuses: message.eventBuses,
-      });
+        const tabId = tabs[0].id;
+        chrome.tabs.sendMessage(tabId, {
+          action: 'trackEventBuses',
+          eventBuses: message.eventBuses,
+        });
 
     });
   }
@@ -108,13 +130,13 @@ class BackgroundHandler {
         return;
       }
 
-      const tabId = tabs[0].id;
-      chrome.tabs.sendMessage(tabId, {
-        action: 'stopTrackingEvents',
-        eventBuses: message.eventBuses,
-      });
+        const tabId = tabs[0].id;
+        chrome.tabs.sendMessage(tabId, {
+          action: 'stopTrackingEvents',
+          eventBuses: message.eventBuses,
+        });
     });
-    }
+  }
 
   // Handle logging events and store them
   handleLogEvent(message, sendResponse) {

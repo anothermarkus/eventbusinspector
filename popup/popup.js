@@ -4,6 +4,7 @@ class PopupEventTracker {
     this.trackButton = null;
     this.addTabButton = null;
     this.eventBusContainer = null;
+    this.selectedEventBuses = []; // To store the selected event buses
   }
 
   init() {
@@ -13,7 +14,37 @@ class PopupEventTracker {
       this.addTabButton = document.getElementById('openTabEvents');
       this.eventBusContainer = document.getElementById('eventBusList');
 
-      // Handle button actions
+      // Retrieve stored state for event buses, selected event buses, and tracking status
+      chrome.storage.local.get(['selectedEventBuses', 'tracking', 'eventBuses', 'isScriptInjected'], (data) => {
+        const eventBuses = data.eventBuses || [];
+        this.selectedEventBuses = data.selectedEventBuses || [];
+
+        // Update the event bus list (render checkboxes)
+        this.updateEventBusList(eventBuses);
+
+        // Restore selected checkboxes based on saved state
+        document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+          if (this.selectedEventBuses.includes(checkbox.value)) {
+            checkbox.checked = true;
+          }
+        });
+
+        // Update tracking button state
+        if (data.tracking !== undefined) {
+          this.tracking = data.tracking;
+          this.trackButton.textContent = this.tracking ? "Stop Tracking Events" : "Track Events";
+        }
+
+        // If script hasn't been injected, inject it now
+        if (!data.isScriptInjected) {
+          chrome.runtime.sendMessage({ action: 'injectScript' }, () => {
+            // After script is injected, set the flag to prevent future injections
+            chrome.storage.local.set({ isScriptInjected: true });
+          });
+        }
+      });
+
+      // Handle the "open tab events" button click
       this.addTabButton.addEventListener('click', () => {
         this.openNewTab();
       });
@@ -21,13 +52,11 @@ class PopupEventTracker {
       if (!this.trackButton) {
         console.error("Track button not found");
       } else {
+        // Handle the "track events" button click
         this.trackButton.addEventListener('click', () => this.toggleTracking());
       }
 
-      // Send message to background.js to inject the script into the active tab
-      chrome.runtime.sendMessage({ action: 'injectScript' });
-
-      // Listen for event buses found or update
+      // Listen for event buses found or updated
       chrome.runtime.onMessage.addListener((message) => this.handleMessages(message));
     });
   }
@@ -37,41 +66,36 @@ class PopupEventTracker {
   }
 
   toggleTracking() {
-    const selectedEventBuses = [];
-
     // Collect all checked event bus names
+    const selectedEventBuses = [];
     document.querySelectorAll('input[type="checkbox"]:checked').forEach((checkbox) => {
       selectedEventBuses.push(checkbox.value);
     });
-
-    // If no event bus is selected, show a warning
-    if (selectedEventBuses.length === 0) {
+  
+    // If no event buses are selected, show an alert and exit early
+    if (selectedEventBuses.length === 0 && !this.tracking) {
       alert("Please select at least one event bus to track");
       return;
     }
-
-    if (!this.tracking) {
-      chrome.runtime.sendMessage({
-        action: 'trackEventBuses',
-        eventBuses: selectedEventBuses
-      });
-
-      // Update button state to indicate it's being pressed
-      this.trackButton.textContent = "Stop Tracking Events";
-      this.tracking = true;
-      return;
-    } 
-
+  
+    // Toggle the tracking state
+    this.tracking = !this.tracking;
+  
+    // Update the track button text based on the tracking state
+    this.trackButton.textContent = this.tracking ? "Stop Tracking Events" : "Track Events";
+  
+    // Store the updated state in chrome storage
+    chrome.storage.local.set({ selectedEventBuses, tracking: this.tracking }, () => {
+      console.log('State saved!');
+    });
+  
+    // Send the message to background.js to start/stop tracking events
     chrome.runtime.sendMessage({
-      action: 'stopTrackingEvents',
+      action: this.tracking ? 'trackEventBuses' : 'stopTrackingEvents',
       eventBuses: selectedEventBuses
     });
-
-    // Update button state to indicate it's no longer pressed
-    this.trackButton.textContent = "Track Events";
-    this.tracking = false;
-    
   }
+  
 
   handleMessages(message) {
     if (message.action === 'eventBusesFound') {
@@ -82,6 +106,9 @@ class PopupEventTracker {
   // Update the popup UI with the list of event buses
   updateEventBusList(eventBuses) {
     this.eventBusContainer.innerHTML = ''; // Clear existing content
+
+    // Store event buses in chrome storage
+    chrome.storage.local.set({ eventBuses });
 
     // Create checkboxes for each event bus
     eventBuses.forEach((eventBus) => {
@@ -98,11 +125,24 @@ class PopupEventTracker {
       listItem.appendChild(checkbox);
       listItem.appendChild(label);
 
+      // Add event listener to update selectedEventBuses on checkbox change
+      checkbox.addEventListener('change', (event) => {
+        if (event.target.checked) {
+          this.selectedEventBuses.push(event.target.value);
+        } else {
+          const index = this.selectedEventBuses.indexOf(event.target.value);
+          if (index > -1) {
+            this.selectedEventBuses.splice(index, 1);
+          }
+        }
+
+        // Update selectedEventBuses in storage whenever it changes
+        chrome.storage.local.set({ selectedEventBuses: this.selectedEventBuses });
+      });
+
       this.eventBusContainer.appendChild(listItem);
     });
   }
-
- 
 }
 
 // Instantiate the class and initialize
