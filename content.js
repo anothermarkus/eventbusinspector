@@ -5,8 +5,6 @@ class ContentScriptHandler {
 
   // Method to initialize the content script and set up listeners
   initialize() {
-    console.log("content.js has loaded");
-
     // Listen for messages from background or popup
     this.setupMessageListener();
 
@@ -17,7 +15,6 @@ class ContentScriptHandler {
   // Set up the message listener to handle communication from background or popup
   setupMessageListener() {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      console.log("Content.js: got message", message);
       this.handleAction(message.action, message.eventBuses);
     });
   }
@@ -40,8 +37,6 @@ class ContentScriptHandler {
   // 
   // content.js -> injectedScript.js
   dispatchCustomEvent(action, eventBuses = []) {
-    console.log(`Content.js: forwarding ${action} to injectedScript.js`);
-
     const event = new CustomEvent("FromContentScript", {
       detail: { action, eventBuses }
     });
@@ -56,7 +51,6 @@ class ContentScriptHandler {
 
   // Handle the InjectionEventToContentLayer and forward to popup.js
   handleInjectionEventToContentLayer(evt) {
-    console.log("content.js: Got InjectionEventToContentLayer message", evt);
     chrome.runtime.sendMessage(evt.detail); // Forward to popup.js
   }
 }
