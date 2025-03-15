@@ -45,7 +45,6 @@ class EventBusTracker {
 
   // Function to handle events from content script
   handleContentScriptEvent(event) {
-    console.log('Received data from content.js script:', event.detail);
     const { action, eventBuses } = event.detail || {};
 
     switch (action) {
@@ -62,7 +61,6 @@ class EventBusTracker {
 
   // Helper function to log publish/subscribe events and dispatch to the content layer
   logEventBusAction(eventBusName, eventType, args) {
-    console.log(`${eventType} on ${eventBusName}:`, args);
     const eventDetail = {
       action: this.EVENT_ACTIONS.UPDATE_EVENT_LIST,
       event: {
@@ -92,22 +90,19 @@ class EventBusTracker {
   trackEventBusesInPage(eventBuses) {
     eventBuses.forEach((eventBusName) => {
       const eventBus = window[eventBusName];
-
       if (
-        eventBus &&
-        (typeof eventBus.publishEvent === 'function' || typeof eventBus.publish === 'function') &&
-        (typeof eventBus.subscribeToEvent === 'function' || typeof eventBus.subscribe === 'function')
+        !(eventBus &&
+          (typeof eventBus.publishEvent === 'function' || typeof eventBus.publish === 'function') &&
+          (typeof eventBus.subscribeToEvent === 'function' || typeof eventBus.subscribe === 'function'))
       ) {
-        console.log(`Tracking event bus: ${eventBusName}`);
-
-        // Wrap methods for publish/subscribe and log actions
-        this.wrapMethod(eventBus, eventBusName, 'publishEvent', this.EVENT_ACTIONS.PUBLISH);
-        this.wrapMethod(eventBus, eventBusName, 'publish', this.EVENT_ACTIONS.PUBLISH);
-        this.wrapMethod(eventBus, eventBusName, 'subscribeToEvent', this.EVENT_ACTIONS.SUBSCRIBE);
-        this.wrapMethod(eventBus, eventBusName, 'subscribe', this.EVENT_ACTIONS.SUBSCRIBE);
-      } else {
         console.log(`Event bus ${eventBusName} not found or invalid.`);
+        return;
       }
+      // Wrap methods for publish/subscribe and log actions
+      this.wrapMethod(eventBus, eventBusName, 'publishEvent', this.EVENT_ACTIONS.PUBLISH);
+      this.wrapMethod(eventBus, eventBusName, 'publish', this.EVENT_ACTIONS.PUBLISH);
+      this.wrapMethod(eventBus, eventBusName, 'subscribeToEvent', this.EVENT_ACTIONS.SUBSCRIBE);
+      this.wrapMethod(eventBus, eventBusName, 'subscribe', this.EVENT_ACTIONS.SUBSCRIBE);
     });
   }
 
@@ -116,7 +111,6 @@ class EventBusTracker {
     this.detectEventBuses();
     this.dispatchDetectedEventBuses();
     window.addEventListener('FromContentScript', (event) => this.handleContentScriptEvent(event));
-    console.log("injectedScript.js has loaded");
   }
 }
 

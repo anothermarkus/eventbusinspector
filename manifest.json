@@ -19,7 +19,7 @@
     }
   ],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/inspector16.png",
       "48": "icons/inspector48.png",
@@ -33,7 +33,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["injectedScript.js"],
+      "resources": ["injected/injectedScript.js"],
       "matches": ["<all_urls>"]
     }
   ],

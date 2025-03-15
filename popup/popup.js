@@ -51,8 +51,6 @@ class PopupEventTracker {
     }
 
     if (!this.tracking) {
-      console.log("Starting to track event buses");
-
       chrome.runtime.sendMessage({
         action: 'trackEventBuses',
         eventBuses: selectedEventBuses

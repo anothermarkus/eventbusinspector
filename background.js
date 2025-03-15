@@ -19,8 +19,6 @@ class BackgroundHandler {
 
   // Handle messages sent to background.js
   onMessage(message, sender, sendResponse) {
-    console.log("background.js: Got a message", message);
-
     switch (message.action) {
       case 'injectScript':
         this.injectScript();
@@ -59,10 +57,8 @@ class BackgroundHandler {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs.length > 0) {
         const tabId = tabs[0].id;
-        console.log("Active tabId:", tabId);
 
-        const injectedsrc = chrome.runtime.getURL('injectedScript.js');  // Inline this part here
-        console.log("Injected Src", injectedsrc);
+        const injectedsrc = chrome.runtime.getURL('injected/injectedScript.js');  // Inline this part here
 
         chrome.scripting.executeScript({
           target: { tabId },
@@ -89,41 +85,40 @@ class BackgroundHandler {
   // Forward the 'trackEventBuses' message to the content script in the active tab
   forwardTrackEventBuses(message) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs.length > 0) {
-        const tabId = tabs[0].id;
-        chrome.tabs.sendMessage(tabId, {
-          action: 'trackEventBuses',
-          eventBuses: message.eventBuses,
-        });
-        console.log("Sent trackEventBuses message to content script.");
-      } else {
+
+      if (!(tabs.length > 0)) {
         console.error("Active tab not found, cannot forward trackEventBuses.");
+        return;
       }
+      const tabId = tabs[0].id;
+      chrome.tabs.sendMessage(tabId, {
+        action: 'trackEventBuses',
+        eventBuses: message.eventBuses,
+      });
+
     });
   }
 
   // Forward the 'stopTrackingEvents' message to the content script in the active tab
   forwardStopTrackingEvents(message) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs.length > 0) {
-        const tabId = tabs[0].id;
-        chrome.tabs.sendMessage(tabId, {
-          action: 'stopTrackingEvents',
-          eventBuses: message.eventBuses,
-        });
-        console.log("Sent stopTrackingEvents message to content script.");
-      } else {
+
+      if (!(tabs.length > 0)) {
         console.error("Active tab not found, cannot forward stopTrackingEvents.");
+        return;
       }
+
+      const tabId = tabs[0].id;
+      chrome.tabs.sendMessage(tabId, {
+        action: 'stopTrackingEvents',
+        eventBuses: message.eventBuses,
+      });
     });
-  }
+    }
 
   // Handle logging events and store them
   handleLogEvent(message, sendResponse) {
     const { type, eventBusName, eventKey, data } = message.data;
-
-    // Handle event logging or processing here
-    console.log(`Received event:`, { type, eventBusName, eventKey, data });
 
     chrome.storage.local.get({ events: [] }, (result) => {
       const events = result.events;
@@ -147,7 +142,7 @@ class BackgroundHandler {
 
   // Open a new tab with a specific URL (eventDisplay.html)
   openNewTab() {
-    chrome.tabs.create({ url: 'eventDisplay.html' }, (newTab) => {
+    chrome.tabs.create({ url: 'eventDisplay/eventDisplay.html' }, (newTab) => {
       this.eventDisplayTabId = newTab.id;
       console.log('New tab opened: ', this.eventDisplayTabId);
     });
@@ -155,14 +150,11 @@ class BackgroundHandler {
 
   // Forward the event list to the event display tab
   updateEventList(message) {
-    console.log("background.js: Received and forwarding updateEventList message to eventDisplay.js");
-
     if (this.eventDisplayTabId !== null) {
       chrome.tabs.sendMessage(this.eventDisplayTabId, {
         action: 'updateEventList',
         event: message.event,
       });
-      console.log("Event list forwarded to eventDisplay tab");
     }
   }
 }
