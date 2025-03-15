@@ -1,6 +1,18 @@
 # Event Bus Inspector
 Basic Chome Extension to debug events being published and subscribed to event bus
 
+Why did I create this?
+
+I'm in a unique situation where I the site that I work on, is worked on with others. Each team has their own integration pattern for MFE communication.
+Some teams use a 3rd party off the shelf client side eventbus (Postal.js) others use homegrown event buses, all of these are causing confusion.
+
+I did not find anything out there that solves the problem of quickly and clearly outputting information passing through the Event Bus.
+
+Rather than building something within the framework of our app client-side, I wanted to re-usable tool that could be used everywhere (perhaps others could use too!)
+
+
+High level overview of this plugin:
+
 background.js is the mediator between popup.js and content.js
 injectedScript.js that sits in the DOM of the target site communicates via window.dispatchEvent(event); which content.js picks up
 
