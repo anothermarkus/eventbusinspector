@@ -80,7 +80,7 @@ note right of background.js: background.js facilitates communication between con
 - Instructional video
 - Add unit tests
 - Add test framework
-- Convert project to Angular ?
+- Convert project to Angular / React 
 - Put TODO list into Issues section in GitHub
 
 
