@@ -1,0 +1,22 @@
+{
+  "name": "eventbusinspector",
+  "version": "1.0.0",
+  "description": "Basic Chome Extension to debug events being published and subscribed to event bus",
+  "main": "background.js",
+  "scripts": {
+    "test": "wdio run wdio.conf.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@wdio/allure-reporter": "^9.11.0",
+    "@wdio/cli": "^9.12.0",
+    "@wdio/local-runner": "^9.12.0",
+    "@wdio/mocha-framework": "^9.11.0",
+    "@wdio/spec-reporter": "^9.11.0",
+    "chromedriver": "^134.0.3",
+    "http-server": "^14.1.1",
+    "wdio-chromedriver-service": "^8.1.1"
+  }
+}
