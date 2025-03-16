@@ -47,6 +47,7 @@ npm run test
 
 ### Bugs
 - No subscription events, they may have happend PRIOR to loading of the page
+- Lifecycle of catching bus events is not consistent, switching tabs through the process seems to break the app
 
 ### MISC
 - Instructional video
